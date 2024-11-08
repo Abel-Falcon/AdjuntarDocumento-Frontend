@@ -1,0 +1,79 @@
+<app-home></app-home>
+<div style="display: flex; justify-content: center; align-items: center; flex-direction: column;">
+  <!-- Botón para Subir Archivo -->
+  <button pButton pRipple type="button" icon="pi pi-plus" class="p-button-rounded p-button-success"
+    (click)="showDialogUpload()" style="margin-bottom: 20px;"></button>
+
+  <!-- Tabla de Archivos -->
+  <p-table [value]="archivos" [tableStyle]="{ 'min-width': '50rem' }">
+    <ng-template pTemplate="header">
+      <tr>
+        <th>ID</th>
+        <th>Nombre</th>
+        <th>Tipo</th>
+        <th>Tamaño (KB)</th>
+        <th>Acciones</th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-archivo>
+      <tr>
+        <!-- Mostramos el ID del archivo -->
+        <td>{{ archivo.id }}</td>
+        <!-- Nombre del archivo -->
+        <td>{{ archivo.name }}</td>
+        <!-- Tipo MIME del archivo -->
+        <td>{{ archivo.type }}</td>
+        <!-- Tamaño en KB del archivo -->
+        <td>{{ (archivo.size / 1024).toFixed(2) }}</td>
+        <td class="flex gap-2">
+          <!-- Botón para Visualizar -->
+          <button pButton pRipple type="button" icon="pi pi-eye" class="p-button-rounded p-button-info"
+            (click)="visualizarArchivoEnModal(archivo.id)"></button>
+
+          <!-- Botón para Descargar -->
+          <button pButton pRipple type="button" icon="pi pi-download" class="p-button-rounded"
+            (click)="downloadArchivo(archivo.id, archivo.name)"></button>
+
+          <!-- Botón para Eliminar -->
+          <button pButton pRipple type="button" icon="pi pi-trash" class="p-button-rounded p-button-danger"
+            (click)="confirmDeleteArchivo(archivo.id)"></button>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+
+  <!-- Diálogo para Subir Archivo -->
+  <p-dialog header="Subir Archivo" [modal]="true" [(visible)]="visible"
+    [style]="{ width: '30rem', 'border-radius': '8px' }" [closable]="true">
+    <div class="flex flex-column align-items-center gap-4 p-4">
+      <!-- Título del diálogo -->
+      <div class="text-lg font-semibold mb-3">Subir un Archivo</div>
+
+      <!-- Campo de selección de archivo con más espacio -->
+      <div class="w-full p-inputgroup" style="margin-bottom: 1.5rem;">
+        <span class="p-inputgroup-addon">
+          <i class="pi pi-file"></i>
+        </span>
+        <input type="file" (change)="onFileSelected($event)" class="p-inputtext p-component w-full" />
+      </div>
+
+      <!-- Botones de acción con más separación y tamaño grande -->
+      <div class="flex justify-content-center gap-4 mt-4">
+        <p-button label="Cancelar" icon="pi pi-times" severity="secondary" (click)="visible = false"
+          class="p-button-rounded p-button-outlined p-button-lg" [ngStyle]="{ 'padding': '0.75rem 2rem' }" />
+        <p-button label="Subir" icon="pi pi-upload" (click)="confirmSaveArchivo()"
+          class="p-button-rounded p-button-primary p-button-lg" [ngStyle]="{ 'padding': '0.75rem 2rem' }" />
+      </div>
+    </div>
+  </p-dialog>
+
+  <!-- Diálogo para Visualizar Archivo -->
+  <p-dialog header="Vista Previa del Archivo" [(visible)]="modalVisible" [style]="{ width: '80vw', height: '80vh' }"
+    [modal]="true" [closable]="true" (onHide)="cerrarModal()">
+    <iframe *ngIf="archivoUrl" [src]="archivoUrl | safe" width="100%" height="100%"></iframe>
+  </p-dialog>
+
+  <!-- Notificaciones y diálogos de confirmación -->
+  <p-toast></p-toast>
+  <p-confirmDialog></p-confirmDialog>
+</div>
