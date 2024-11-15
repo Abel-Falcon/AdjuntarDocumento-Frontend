@@ -15,22 +15,21 @@ export class ConsolidadoService {
 
   // Método para listar todos los archivos
   getFiles(): Observable<Consolidado[]> {
-    return this.http
-      .get<Consolidado[]>(`${this.baseUrl}/files`)
-      .pipe(
-        map((data: any[]) =>
-          data.map(
-            (file) =>
-              new Consolidado(
-                file.id,
-                file.name,
-                file.url,
-                file.type,
-                file.size
-              )
-          )
+    return this.http.get<Consolidado[]>(`${this.baseUrl}/files`).pipe(
+      map((data: any[]) =>
+        data.map(
+          (file) =>
+            new Consolidado(
+              file.id,
+              file.name,
+              file.url,
+              file.type,
+              file.size,
+              file.detallePPPId // Añadimos detallePPPId aquí
+            )
         )
-      );
+      )
+    );
   }
 
   // Método para obtener un archivo específico por ID y descargarlo
@@ -45,10 +44,16 @@ export class ConsolidadoService {
     return this.http.get(url, { responseType: 'blob' });
   }
 
-  // Método para subir uno o más archivos
-  uploadFiles(files: File[]): Observable<string[]> {
+  // Método para subir uno o más archivos con opción de asociar un Detalle_PPP existente
+  uploadFiles(files: File[], detallePPPId?: number): Observable<string[]> {
     const formData = new FormData();
     files.forEach((file) => formData.append('file', file, file.name));
+
+    // Verifica si detallePPPId está definido y no es null antes de agregarlo
+    if (detallePPPId !== undefined && detallePPPId !== null) {
+      formData.append('detallePPPId', detallePPPId.toString());
+    }
+
     return this.http
       .post<any>(`${this.baseUrl}/upload`, formData)
       .pipe(map((responses: any[]) => responses.map((res) => res.message)));

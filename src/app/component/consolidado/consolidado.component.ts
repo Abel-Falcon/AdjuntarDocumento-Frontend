@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ViewChild, ElementRef } from '@angular/core';
 import { HomeComponent } from '../../home/home.component';
 import { TableModule } from 'primeng/table';
 import { CommonModule } from '@angular/common';
@@ -28,7 +28,7 @@ import { SafePipe } from '../../pipes/safe.pipe';
     ConfirmDialogModule,
     DialogModule,
     ToastModule,
-    SafePipe, // Importa el pipe aquí
+    SafePipe,
   ],
   templateUrl: './consolidado.component.html',
   styleUrls: ['./consolidado.component.css'],
@@ -37,13 +37,21 @@ export class ConsolidadoComponent {
   archivos: Consolidado[] = [];
   titulo: string = '';
   opc: string = '';
-  consolidado = new Consolidado(0, '', '', '', 0); // Incluye id como 0 o null
+  consolidado = new Consolidado(0, '', '', '', 0);
   op = 0;
   visible: boolean = false;
   isDeleteInProgress: boolean = false;
   selectedFile: File | null = null;
-  modalVisible: boolean = false; // Para controlar el modal de vista previa
-  archivoUrl: string | null = null; // Para almacenar la URL del archivo a visualizar
+  selectedFileType: string = '';
+  modalVisible: boolean = false;
+  archivoUrl: string | null = null;
+  archivosSubidos: number = 0;
+
+  // Variables para la simulación de carga
+  isUploading: boolean = false;
+  progress: number = 0;
+
+  @ViewChild('fileInput') fileInput!: ElementRef;
 
   constructor(
     private consolidadoService: ConsolidadoService,
@@ -58,7 +66,7 @@ export class ConsolidadoComponent {
   listarArchivos() {
     this.consolidadoService.getFiles().subscribe((data) => {
       this.archivos = data;
-      console.log(this.archivos); // Para verificar que cada archivo tiene un id definido
+      this.archivosSubidos = this.archivos.length;
     });
   }
 
@@ -67,10 +75,45 @@ export class ConsolidadoComponent {
     this.opc = 'Subir';
     this.op = 0;
     this.visible = true;
+    this.progress = 0; // Resetea el progreso al abrir el diálogo
   }
 
   onFileSelected(event: any) {
     this.selectedFile = event.target.files[0];
+    if (this.selectedFile) {
+      this.selectedFileType = this.selectedFile.type;
+
+      // Inicia la simulación de carga inmediatamente después de seleccionar el archivo
+      this.isUploading = true;
+      this.progress = 0;
+
+      const uploadInterval = setInterval(() => {
+        if (this.progress < 100) {
+          this.progress += 10; // Incrementa el progreso cada 500 ms
+        } else {
+          clearInterval(uploadInterval);
+          this.isUploading = false; // Desactiva la barra de progreso al completar la simulación
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Carga completada',
+            detail: 'El archivo ha sido cargado exitosamente.',
+          });
+        }
+      }, 500); // Intervalo de 500 ms para actualizar el progreso
+    }
+  }
+
+  getFileIcon(fileType: string): string {
+    if (fileType === 'application/pdf') {
+      return 'assets/icons/ext-pdf-min.png';
+    } else if (
+      fileType === 'application/msword' ||
+      fileType ===
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    ) {
+      return 'assets/icons/ext-doc-min.png';
+    }
+    return 'assets/icons/default-icon.png';
   }
 
   confirmDeleteArchivo(id: number) {
@@ -111,47 +154,92 @@ export class ConsolidadoComponent {
     });
   }
 
+  // Método para confirmar y realizar la carga
+  confirmSaveArchivo() {
+    this.confirmationService.confirm({
+      message: '¿Estás seguro de que deseas subir este archivo?',
+      header: 'Confirmar Acción',
+      icon: 'pi pi-exclamation-triangle',
+      accept: () => {
+        this.uploadArchivo();
+      },
+    });
+  }
+
+  // Realiza el envío del archivo al servidor sin reiniciar la simulación de carga
   uploadArchivo(): void {
     if (this.selectedFile) {
+      this.isUploading = true; // Muestra la barra de progreso al iniciar el envío real
+      this.progress = 0;
+
+      // Llama al servicio para enviar el archivo sin la simulación de progreso
       this.consolidadoService.uploadFiles([this.selectedFile]).subscribe({
         next: (messages: string[]) => {
+          this.isUploading = false;
           this.messageService.add({
             severity: 'success',
-            summary: 'Correcto',
-            detail: messages[0],
+            summary: 'Archivo Enviado',
+            detail: messages[0] || 'El archivo ha sido enviado exitosamente.',
           });
           this.listarArchivos();
-          this.op = 0;
+          this.selectedFile = null; // Resetea el archivo seleccionado después del envío
+          this.progress = 0; // Reinicia el progreso después del envío
+          this.visible = false; // Cierra el modal después de la carga
         },
         error: () => {
-          this.isDeleteInProgress = false;
+          this.isUploading = false;
           this.messageService.add({
             severity: 'error',
             summary: 'Error',
-            detail: 'No se pudo subir el archivo',
+            detail: 'No se pudo enviar el archivo.',
           });
         },
       });
-      this.visible = false;
     }
   }
 
   downloadArchivo(id: number, name: string) {
-    this.consolidadoService.getFile(id).subscribe((blob: Blob) => {
-      const url = window.URL.createObjectURL(blob);
+    if (id && id !== 0) {
+      this.consolidadoService.getFile(id).subscribe((blob: Blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const anchor = document.createElement('a');
+        anchor.href = url;
+        anchor.download = name;
+        anchor.click();
+        window.URL.revokeObjectURL(url);
+      });
+    } else if (this.selectedFile) {
+      const url = window.URL.createObjectURL(this.selectedFile);
       const anchor = document.createElement('a');
       anchor.href = url;
-      anchor.download = name;
+      anchor.download = this.selectedFile.name;
       anchor.click();
       window.URL.revokeObjectURL(url);
-    });
+    } else {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Descarga no disponible',
+        detail: 'Este archivo aún no ha sido enviado.',
+      });
+    }
   }
 
   visualizarArchivoEnModal(id: number) {
-    this.consolidadoService.getFileForPreview(id).subscribe((blob: Blob) => {
-      this.archivoUrl = window.URL.createObjectURL(blob);
+    if (id && id !== 0) {
+      this.consolidadoService.getFileForPreview(id).subscribe((blob: Blob) => {
+        this.archivoUrl = window.URL.createObjectURL(blob);
+        this.modalVisible = true;
+      });
+    } else if (this.selectedFile) {
+      this.archivoUrl = window.URL.createObjectURL(this.selectedFile);
       this.modalVisible = true;
-    });
+    } else {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Visualización no disponible',
+        detail: 'Este archivo aún no ha sido enviado.',
+      });
+    }
   }
 
   cerrarModal() {
@@ -159,29 +247,13 @@ export class ConsolidadoComponent {
     this.archivoUrl = null;
   }
 
-  confirmSaveArchivo() {
-    this.confirmationService.confirm({
-      message:
-        this.op === 0
-          ? '¿Estás seguro de que deseas subir este archivo?'
-          : '¿Estás seguro de que deseas editar este archivo?',
-      header: 'Confirmar Acción',
-      icon: 'pi pi-exclamation-triangle',
-      accept: () => {
-        this.opcion();
-      },
-    });
-  }
+  removeSelectedFile() {
+    this.selectedFile = null;
+    this.selectedFileType = '';
 
-  opcion(): void {
-    if (this.op == 0) {
-      this.uploadArchivo();
-    } else {
-      this.messageService.add({
-        severity: 'info',
-        summary: 'Información',
-        detail: 'Funcionalidad de edición no implementada.',
-      });
+    // Reinicia el campo de archivo para permitir volver a seleccionar el mismo archivo
+    if (this.fileInput) {
+      this.fileInput.nativeElement.value = '';
     }
   }
 }

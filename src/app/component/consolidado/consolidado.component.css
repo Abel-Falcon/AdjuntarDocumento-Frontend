@@ -1,0 +1,239 @@
+/* Estilo del modal */
+.task-modal {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  font-family: "Arial", sans-serif;
+  background-color: #fff;
+  padding: 25px;
+  border-radius: 15px;
+  box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
+  width: 400px;
+  margin: auto;
+}
+
+/* Cabecera de la tarea */
+.task-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+  width: 100%;
+}
+
+.icon {
+  color: #3498db;
+  font-size: 1.4rem;
+}
+
+.task-status {
+  color: #e74c3c;
+  font-size: 1em;
+  text-transform: uppercase;
+}
+
+/* Información de archivos subidos */
+.files-uploaded {
+  font-size: 0.8em;
+  color: #888;
+  margin-bottom: 15px;
+  text-align: right;
+  width: 100%;
+}
+
+/* Área de adjuntar archivo */
+.file-upload {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px dashed #ddd;
+  border-radius: 8px;
+  padding: 10px;
+  font-size: 0.9em;
+  color: #888;
+  cursor: pointer;
+  width: 100%;
+  margin-bottom: 20px;
+  background-color: #f9f9f9;
+  transition: background-color 0.3s ease;
+}
+
+.file-upload:hover {
+  background-color: #e7f3fc;
+}
+
+.file-upload i {
+  margin-right: 10px;
+}
+
+.file-input {
+  display: none;
+}
+
+/* Contenedor del archivo con barra de progreso */
+.file-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 10px;
+  margin-bottom: 15px;
+  background-color: #f9f9f9;
+  position: relative;
+  overflow: hidden;
+}
+
+.file-icon {
+  width: 40px;
+  height: 40px;
+}
+
+.file-details {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+  width: 100%;
+}
+
+.file-name {
+  font-size: 1rem;
+  color: #333;
+  margin-bottom: 2px;
+}
+
+.file-type {
+  font-size: 0.75rem;
+  color: #888;
+  text-transform: capitalize;
+}
+
+/* Barra de progreso en la parte inferior del archivo */
+.progress-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 6px;
+  background-color: #e0e0e0;
+  border-radius: 0 0 4px 4px;
+  overflow: hidden;
+}
+
+.progress {
+  height: 100%;
+  background-color: #4a90e2;
+  transition: width 0.3s ease;
+}
+
+/* Botones de acción al hacer hover */
+.file-actions {
+  display: none;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  gap: 10px;
+}
+
+.file-info:hover .file-actions {
+  display: flex;
+}
+
+.action-button {
+  background: #4a90e2;
+  color: #fff;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.15);
+  transition: background 0.3s ease;
+}
+
+.action-button:hover {
+  background: #3a7dcf;
+}
+
+/* Iconos dentro del botón de acción */
+.action-button .pi {
+  font-size: 1rem;
+  color: white;
+}
+
+/* Botón de "ENTREGAR MI TRABAJO" */
+.submit-button {
+  background-color: #4a90e2;
+  color: #fff;
+  border: 2px solid #f47c98;
+  border-radius: 20px;
+  padding: 12px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+  width: 100%;
+  margin-top: 15px;
+  box-shadow: 0px 4px 8px rgba(244, 124, 152, 0.4);
+}
+
+.submit-button:hover {
+  background-color: #3a7dcf;
+}
+
+/* Sección de comentarios */
+.comments-section {
+  width: 100%;
+  text-align: left;
+  margin-top: 20px;
+}
+
+.comments-label {
+  font-size: 0.9em;
+  color: #888;
+  margin-bottom: 8px;
+}
+
+/* Caja de comentarios */
+.comment-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background-color: #f1f1f1;
+  border-radius: 8px;
+  padding: 8px;
+  border: 1px solid #ddd;
+}
+
+.user-icon {
+  color: #888;
+  font-size: 1.3em;
+}
+
+.comment-input {
+  border: none;
+  background: none;
+  outline: none;
+  flex: 1;
+  padding: 6px;
+  font-size: 0.9em;
+  color: #333;
+}
+
+.send-button {
+  background: none;
+  border: none;
+  color: #3498db;
+  font-size: 1.2em;
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+.send-button:hover {
+  color: #2980b9;
+}

@@ -17,13 +17,9 @@
     </ng-template>
     <ng-template pTemplate="body" let-archivo>
       <tr>
-        <!-- Mostramos el ID del archivo -->
         <td>{{ archivo.id }}</td>
-        <!-- Nombre del archivo -->
         <td>{{ archivo.name }}</td>
-        <!-- Tipo MIME del archivo -->
         <td>{{ archivo.type }}</td>
-        <!-- Tamaño en KB del archivo -->
         <td>{{ (archivo.size / 1024).toFixed(2) }}</td>
         <td class="flex gap-2">
           <!-- Botón para Visualizar -->
@@ -45,24 +41,52 @@
   <!-- Diálogo para Subir Archivo -->
   <p-dialog header="Subir Archivo" [modal]="true" [(visible)]="visible"
     [style]="{ width: '30rem', 'border-radius': '8px' }" [closable]="true">
-    <div class="flex flex-column align-items-center gap-4 p-4">
-      <!-- Título del diálogo -->
-      <div class="text-lg font-semibold mb-3">Subir un Archivo</div>
+    <div class="task-modal">
+      <div class="task-header">
+        <i class="pi pi-exclamation-triangle icon"></i>
+        <span class="task-status">Tarea sin entregar</span>
+        <i class="pi pi-exclamation-triangle icon"></i>
+      </div>
+      <span class="files-uploaded">Archivos subidos: {{ archivosSubidos }}</span>
 
-      <!-- Campo de selección de archivo con más espacio -->
-      <div class="w-full p-inputgroup" style="margin-bottom: 1.5rem;">
-        <span class="p-inputgroup-addon">
-          <i class="pi pi-file"></i>
-        </span>
-        <input type="file" (change)="onFileSelected($event)" class="p-inputtext p-component w-full" />
+      <!-- Mostrar ícono, nombre y tipo del archivo si ha sido seleccionado -->
+      <div *ngIf="selectedFile" class="file-info">
+        <img [src]="getFileIcon(selectedFile.type)" alt="File Icon" class="file-icon" />
+        <div class="file-details">
+          <span class="file-name">{{ selectedFile.name }}</span>
+          <span class="file-type">Documento Portátil</span>
+        </div>
+
+        <!-- Barra de progreso -->
+        <div *ngIf="isUploading" class="progress-bar">
+          <div class="progress" [style.width.%]="progress"></div>
+        </div>
+
+        <!-- Botones de acción que aparecen en el hover -->
+        <div class="file-actions">
+          <button pButton icon="pi pi-eye" class="action-button" (click)="visualizarArchivoEnModal(0)"></button>
+          <button pButton icon="pi pi-download" class="action-button"
+            (click)="downloadArchivo(0, selectedFile.name)"></button>
+          <button pButton icon="pi pi-times" class="action-button" (click)="removeSelectedFile()"></button>
+        </div>
       </div>
 
-      <!-- Botones de acción con más separación y tamaño grande -->
-      <div class="flex justify-content-center gap-4 mt-4">
-        <p-button label="Cancelar" icon="pi pi-times" severity="secondary" (click)="visible = false"
-          class="p-button-rounded p-button-outlined p-button-lg" [ngStyle]="{ 'padding': '0.75rem 2rem' }" />
-        <p-button label="Subir" icon="pi pi-upload" (click)="confirmSaveArchivo()"
-          class="p-button-rounded p-button-primary p-button-lg" [ngStyle]="{ 'padding': '0.75rem 2rem' }" />
+      <!-- Área para adjuntar archivo -->
+      <label class="file-upload" [class.disabled]="isUploading">
+        <i class="pi pi-paperclip"></i> Adjuntar
+        <input type="file" (change)="onFileSelected($event)" class="file-input" [disabled]="isUploading" #fileInput />
+      </label>
+
+      <!-- Botón para entregar trabajo -->
+      <button class="submit-button" (click)="confirmSaveArchivo()" [disabled]="isUploading">ENTREGAR MI TRABAJO</button>
+
+      <div class="comments-section">
+        <span class="comments-label">Comentarios privados (Sólo los ve el docente)</span>
+        <div class="comment-box">
+          <i class="pi pi-user user-icon"></i>
+          <input type="text" placeholder="Escribe un comentario..." class="comment-input" />
+          <button class="send-button"><i class="pi pi-send"></i></button>
+        </div>
       </div>
     </div>
   </p-dialog>
